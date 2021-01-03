@@ -1,0 +1,32 @@
+name: release
+on: [push]
+jobs:
+  build-extension:
+    runs-on: windows-latest
+    env: 
+        DOTNET_NOLOGO: true
+        DOTNET_CLI_TELEMETRY_OPTOUT: true
+        Configuration: Release      
+        Version: '1.0.${{ github.run_number }}'
+        SolutionPath: src/PowerPointTemplates.sln
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+      with:
+        vs-version: '[16.8,16.9)'
+    - name: Setup nuget
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+    - name: Restore NuGet Packages
+      run: nuget restore $env:SolutionPath
+    - name: Build extension
+      run: msbuild $env:SolutionPath /t:Rebuild
+    # - name: Test extension
+    #   run: dotnet test --no-build --verbosity normal $env:SolutionPath
