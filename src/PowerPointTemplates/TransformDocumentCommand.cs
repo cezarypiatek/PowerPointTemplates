@@ -13,18 +13,28 @@ namespace PowerPointTemplates
 {
     [Command("transform", Description = "Transform template document using values")]
 
-    public class GenerateDocumentCommand : ICommand
+    public class TransformDocumentCommand : ICommand
     {
         [CommandParameter(0, Description = "Template document")]
         public string TemplateDocument { get; set; }
 
-        [CommandOption("valuesFile", 'v', Description = "File with values for placeholders replacement")]
+        [CommandOption("valuesFile", 'v', Description = "File with values for placeholders replacement", IsRequired = true)]
         public string ValuesFile { get; set; }
+
+        [CommandOption("exportSlides", 'e', Description = "Export every slide into a separated file in a specified format like: JPG, PNG.", IsRequired = false)]
+        public string ExportSlides { get; set; }
+
+
+        [CommandOption("save", 's', Description = "Save transformed document", IsRequired = false)]
+        public bool SaveTransformed { get; set; }
+        
+        [CommandOption("leaveOpen", 'l', Description = "Leave document open", IsRequired = false)]
+        public bool LeaveOpen { get; set; }
 
         public ValueTask ExecuteAsync(IConsole console)
         {
             var ppt = new ApplicationClass();
-            var presentation = ppt.Presentations.Open(TemplateDocument, WithWindow: MsoTriState.msoFalse);
+            var presentation = ppt.Presentations.Open(TemplateDocument, WithWindow: LeaveOpen? MsoTriState.msoTrue : MsoTriState.msoFalse);
             var values = JsonSerializer.Deserialize<List<PlaceholderReplacement>>(File.ReadAllText(ValuesFile));
             try
             {
@@ -32,13 +42,25 @@ namespace PowerPointTemplates
                 {
                     var templateSlide = presentation.Slides[i];
                     ReplacePlaceholders(templateSlide, values);
-                    templateSlide.Export($"{Directory.GetCurrentDirectory()}\\slide_{i}.png", "PNG");
+                    if (string.IsNullOrWhiteSpace(ExportSlides) == false)
+                    {
+                        templateSlide.Export($"{Directory.GetCurrentDirectory()}\\slide_{i}.{ExportSlides.ToLower()}", ExportSlides.ToUpper());
+                    }
+                }
+
+                if (SaveTransformed)
+                {
+                    var newName = $"{Directory.GetCurrentDirectory()}\\{Path.GetFileNameWithoutExtension(TemplateDocument)}_transformed.{Path.GetExtension(TemplateDocument)}";
+                    presentation.SaveCopyAs(newName);
                 }
             }
             finally
             {
-                presentation.Close();
-                ppt.Quit();
+                if(LeaveOpen == false)
+                {
+                    presentation.Close();
+                    ppt.Quit();
+                }
             }
 
             return default;
