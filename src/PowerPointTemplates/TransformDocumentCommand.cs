@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Office.Core;
@@ -35,7 +37,8 @@ namespace PowerPointTemplates
         {
             var ppt = new ApplicationClass();
             var presentation = ppt.Presentations.Open(TemplateDocument, WithWindow: LeaveOpen? MsoTriState.msoTrue : MsoTriState.msoFalse);
-            var values = JsonSerializer.Deserialize<List<PlaceholderReplacement>>(File.ReadAllText(ValuesFile));
+            var values = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(ValuesFile));
+            
             try
             {
                 for (var i = 1; i <= presentation.Slides.Count; i++)
@@ -44,7 +47,7 @@ namespace PowerPointTemplates
                     ReplacePlaceholders(templateSlide, values);
                     if (string.IsNullOrWhiteSpace(ExportSlides) == false)
                     {
-                        templateSlide.Export($"{Directory.GetCurrentDirectory()}\\slide_{i}.{ExportSlides.ToLower()}", ExportSlides.ToUpper());
+                        templateSlide.Export($"{Directory.GetCurrentDirectory()}\\{templateSlide.Name}.{ExportSlides.ToLower()}", ExportSlides.ToUpper());
                     }
                 }
 
@@ -66,19 +69,18 @@ namespace PowerPointTemplates
             return default;
         }
 
-        private static void ReplacePlaceholders(Slide templateSlide, List<PlaceholderReplacement> templateElements)
+        private static void ReplacePlaceholders(Slide templateSlide, Dictionary<string,string> dict)
         {
-            var dict = templateElements.ToDictionary(x => x.Key, x => x);
             for (var i = 1; i <= templateSlide.Shapes.Count; i++)
-                if (templateSlide.Shapes[i] is { } shape && shape.AlternativeText is { } key &&
-                    dict.TryGetValue(key, out var placeholderReplacement))
+                if (templateSlide.Shapes[i] is { AlternativeText: { } key} shape && dict.TryGetValue(key, out var placeholderReplacement))
+                    
                     switch (shape.Type)
                     {
                         case MsoShapeType.msoTextBox:
-                            templateSlide.Shapes[i].TextFrame.TextRange.Text = placeholderReplacement.Value;
+                            templateSlide.Shapes[i].TextFrame.TextRange.Text = placeholderReplacement;
                             break;
                         case MsoShapeType.msoAutoShape:
-                            templateSlide.Shapes[i].Fill.UserPicture(placeholderReplacement.Value);
+                            templateSlide.Shapes[i].Fill.UserPicture(placeholderReplacement);
                             break;
                     }
         }
