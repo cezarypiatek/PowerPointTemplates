@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Office.Core;
@@ -25,10 +22,17 @@ namespace PowerPointTemplates
 
         [CommandOption("exportSlides", 'e', Description = "Export every slide into a separated file in a specified format like: JPG, PNG.", IsRequired = false)]
         public string ExportSlides { get; set; }
+        
+        [CommandOption("outDir", 'o', Description = "Export output directory", IsRequired = false)]
+        public string OutDir { get; set; }
 
 
         [CommandOption("save", 's', Description = "Save transformed document", IsRequired = false)]
         public bool SaveTransformed { get; set; }
+        
+        
+        [CommandOption("saveFileName", 'f', Description = "Save transformed document", IsRequired = false)]
+        public string SaveTransformedFileName { get; set; }
         
         [CommandOption("leaveOpen", 'l', Description = "Leave document open", IsRequired = false)]
         public bool LeaveOpen { get; set; }
@@ -41,19 +45,21 @@ namespace PowerPointTemplates
             
             try
             {
+                var dir = OutDir ?? $"{Directory.GetCurrentDirectory()}\\out";
                 for (var i = 1; i <= presentation.Slides.Count; i++)
                 {
                     var templateSlide = presentation.Slides[i];
                     ReplacePlaceholders(templateSlide, values);
                     if (string.IsNullOrWhiteSpace(ExportSlides) == false)
                     {
-                        templateSlide.Export($"{Directory.GetCurrentDirectory()}\\{templateSlide.Name}.{ExportSlides.ToLower()}", ExportSlides.ToUpper());
+                       
+                        templateSlide.Export($"{dir}\\{templateSlide.Name}.{ExportSlides.ToLower()}", ExportSlides.ToUpper());
                     }
                 }
 
                 if (SaveTransformed)
                 {
-                    var newName = $"{Directory.GetCurrentDirectory()}\\{Path.GetFileNameWithoutExtension(TemplateDocument)}_transformed.{Path.GetExtension(TemplateDocument)}";
+                    var newName = $"{dir}\\{SaveTransformedFileName}.{Path.GetExtension(TemplateDocument)}";
                     presentation.SaveCopyAs(newName);
                 }
             }
