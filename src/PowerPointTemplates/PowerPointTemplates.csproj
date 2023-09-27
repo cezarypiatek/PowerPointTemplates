@@ -3,6 +3,11 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>powerpointtemplates</ToolCommandName>
+    <RollForward>LatestMajor</RollForward>
+    <Authors>Cezary Piątek</Authors>
   </PropertyGroup>
 
   <ItemGroup>
