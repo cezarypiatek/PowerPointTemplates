@@ -6,6 +6,11 @@ This is a command line tool that allows to replace placeholders inside PowerPoin
 - Minimum `dotnet core 3.1`
 - Microsoft Office
 
+## How to install
+
+```
+dotnet tool install --global PowerPointTemplates -no-cache --ignore-failed-sources
+```
 
 Nuget https://www.nuget.org/packages/PowerPointTemplates
 
