@@ -1,6 +1,6 @@
 # PowerPointTemplates
 
-This is a command line tool that allows to replace placeholders inside PowerPoint document with values provided as JSON file.
+This is a command line tool that allows for replacing placeholders inside PowerPoint documents with values provided as JSON files.
 
 ## Requirements
 - Minimum `dotnet core 3.1`
@@ -20,7 +20,14 @@ Use `Alt Text` to convert Text Box and Shapes into a placeholders. `Alt Text` is
 
 ![image](https://github.com/cezarypiatek/PowerPointTemplates/assets/7759991/f7d0590b-762a-473a-8b95-7fb529c0127a)
 
+JSON file with a related placeholder value:
 
+```json
+{
+ "Survey_Link": "http://tinyurl.com/sample",
+ "Survey_Code": "c:\\images\\code.png"
+}
+```
 
 ## How to use it
 
